@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<sub-flow name="bankmandate" doc:id="faff1486-da05-4d7b-9a82-b4687df4c7c2" >
+		<ee:transform doc:name="Transform Message" doc:id="6f058ab3-7a8f-474c-8dff-7f58b8eee751">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="temp" ><![CDATA[%dw 2.0
+output application/json
+---
+payload.parts..content[0]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="2048035b-e8ed-4a4b-a7df-e321fafc0557" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Binaries
+output application/json
+---
+{
+	"doc_type":attributes.queryParams.doc_type,
+	"action":'extract',
+	"doc_base64" : (toBase64(vars.temp) as String),
+	"req_id": 'req-1'
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="BankMandate" doc:id="cf412e0e-aa56-440d-973b-d4dc9f33cf56" config-ref="HTTP_Request_configuration" path="${arya.bankmandate}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/json",
+	"token" : p('secure::arya.bankmandate-token')
+}]]]></http:headers>
+		</http:request>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="845eb07d-7a12-43bb-86e3-45a6650eadda" message="End of Bankmandate FLow"/>
+	</sub-flow>
+</mule>

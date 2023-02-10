@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<error-handler name="globalErrorHandlerError_Handler" doc:id="40b8cf98-7ee8-4ab5-9ba1-3cad5402c8d7" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5b026c1b-b2b1-496b-96ad-6c6ca140d10b" type="ANY">
+			<choice doc:name="" doc:id="368e2d3f-f960-419d-bd9e-443ae7135fda" >
+				<when expression="#[error.errorType.asString=='APIKIT:BAD_REQUEST']">
+					<set-variable value="400" doc:name="httpStatus" doc:id="5db163c2-073e-4e58-80b3-973b397cb241" variableName="httpStatus"/>
+					<set-variable value="#[error.description]" doc:name="faultString" doc:id="dc63be38-d51e-48f6-886c-201e303a1b66" variableName="faultString"/>
+				</when>
+				<when expression="#[error.errorType.asString=='APIKIT:NOT_FOUND']">
+					<set-variable value="404" doc:name="httpStatus" doc:id="2a1881f3-22c8-4f5c-b705-9f0c94f33870" variableName="httpStatus"/>
+					<set-variable value='#["Resource Not Found"]' doc:name="faultString" doc:id="a0f4ae33-bb93-4353-bd55-1b303b6a8efe" variableName="faultString"/>
+				</when>
+				<when expression="#[error.errorType.asString=='APIKIT:METHOD_NOT_ALLOWED']">
+					<set-variable value="405" doc:name="httpStatus" doc:id="d7d13587-289d-4e54-af95-fea72f9e7d5a" variableName="httpStatus"/>
+					<set-variable value='#["Method not allowed"]' doc:name="faultString" doc:id="a1e05712-acf2-4664-a827-a1e6972280c3" variableName="faultString"/>
+				</when>
+				<when expression="#[error.errorType.asString=='APIKIT:UNSUPPORTED_MEDIA_TYPE']">
+					<set-variable value="415" doc:name="httpStatus" doc:id="67cbccf4-21a4-4bc7-afdc-fb373ea19abc" variableName="httpStatus"/>
+					<set-variable value='#["Unsupported media type"]' doc:name="faultString" doc:id="73bb052c-50f1-495d-941c-1acc29fdf0ca" variableName="faultString"/>
+				</when>
+				<when expression="#[error.errorType.asString=='APIKIT:NOT_IMPLEMENTED']">
+					<set-variable value="501" doc:name="httpStatus" doc:id="f951448b-af1f-4dde-9949-e10009c5cfe2" variableName="httpStatus"/>
+					<set-variable value='#["Not Implemented"]' doc:name="faultString" doc:id="7ce0f58b-c539-4f86-b6e4-cfca2a9712d2" variableName="faultString"/>
+				</when>
+				<when expression="#[error.errorType.asString=='HTTP:NOT_FOUND']">
+					<set-variable value="404" doc:name="httpStatus" doc:id="89a968aa-ef96-4ae9-8c60-b16ba8cad328" variableName="httpStatus"/>
+					<set-variable value='#[error.description]' doc:name="faultString" doc:id="2f1da32f-da0c-47fb-b585-7096bf67eb21" variableName="faultString"/>
+				</when>
+				<when expression="#[error.errorType.asString=='HTTP:TIMEOUT']">
+					<set-variable value="408" doc:name="httpStatus" doc:id="6532d730-f8b4-48d6-84c5-4d738f6c1f6a" variableName="httpStatus"/>
+					<set-variable value='#["Backend connection timed out"]' doc:name="faultString" doc:id="e70e54aa-f899-4cde-955f-28d78af3f544" variableName="faultString"/>
+				</when>
+				<when expression="#[error.errorType.asString=='HTTP:CONNECTIVITY']">
+					<set-variable value="500" doc:name="httpStatus" doc:id="0b2f5729-d7e0-4b9a-b899-28029af9094b" variableName="httpStatus"/>
+					<set-variable value='#["Backend connectivity error occurred"]' doc:name="faultString" doc:id="098d7c17-9538-4b10-88bf-f5d32cb2d3ca" variableName="faultString"/>
+				</when>
+				<when expression="#[error.muleMessage.typedValue != null]">
+					<set-variable value="#[error.muleMessage.typedAttributes.statusCode default 500]" doc:name="httpStatus" doc:id="68672ec7-a497-48c8-bdd5-ba4eaf97ed8c" variableName="httpStatus"/>
+					<set-variable value="#[%dw 2.0&#10;import * from dw::core::Strings&#10;output application/json&#10;---&#10; &quot;[&quot; ++ write(error.muleMessage.typedValue, 'application/json') replace /[\n]/ with(&quot;&quot;) ++ &quot;]&quot;]" doc:name="faultString" doc:id="2041a60e-1a75-4d61-b134-c7416e0de394" variableName="faultString"/>
+				</when>
+			</choice>
+			<ee:transform doc:name="Transform Message" doc:id="3b446d58-ff9c-4916-a733-f8f3f8d5da71" >
+				<ee:message >
+					<ee:set-payload resource="dwl/errorResponse.dwl" />
+				
+</ee:message>
+			</ee:transform>
+		</on-error-propagate>
+	</error-handler>
+</mule>

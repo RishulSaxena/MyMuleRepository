@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="pan-gst" doc:id="6876df6d-61bd-42c3-bbb3-0aeb9da1230d" >
+		<ee:transform doc:name="Transform Message" doc:id="332b0c34-1bf0-4ec3-a841-4ad60404cc4a">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "pan": attributes.queryParams.pan_no,
+  "req_id": payload.req_id
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="pan-gst" doc:id="980cf55e-c427-471b-a0f3-04cff68b940e" config-ref="HTTP_Request_configuration" path="${arya.pan-gst}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/json",
+	"token" : p('secure::arya.pan-gst-token')
+}]]]></http:headers>
+		</http:request>
+		<logger level="INFO" doc:name="End Logger" doc:id="637cfa2f-6d45-4fe3-b5b1-d25b3f709ec6" message="End of pan-gst Flow" />
+	</sub-flow>
+</mule>

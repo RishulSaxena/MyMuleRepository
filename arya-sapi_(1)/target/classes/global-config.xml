@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+    <http:listener-config name="httpListenerConfig">
+        <http:listener-connection host="${https-listner.host}" port="${https-listner.port}" readTimeout="${https-listner.timeout}" protocol="HTTPS">
+            <tls:context>
+                <tls:key-store type="jks" path="${keystore.path}" keyPassword="${secure::keystore.password}" password="${secure::keystore.password}" />
+            </tls:context>
+        </http:listener-connection>
+    </http:listener-config>
+    <apikit:config name="arya-sapi-config" api="resource::ca01a9e5-8e31-4b7d-bd57-857354f21a0a:arya-sapi:1.0.2:raml:zip:arya-sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="4717ed38-a65f-4949-9121-eeb4f79f5c1f">
+        <http:request-connection protocol="HTTPS" host="${arya.host}" />
+    </http:request-config>
+    <configuration-properties doc:name="Configuration properties" doc:id="37c4757a-aeb2-4255-ae8a-c25617bc12d0" file="properties/${env}.yaml" />
+    <global-property doc:name="Global Property" doc:id="7e79b10b-0828-4d87-89c0-c66a72246339" name="env" value="dev" />
+    <configuration doc:name="Configuration" doc:id="b6380c8f-df0d-4273-8f03-a1d3558a4f47" defaultErrorHandler-ref="globalErrorHandlerError_Handler" />
+    <secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="2cd2f544-5aba-480a-a88c-bbca35059702" key="${key}" file="properties/${env}_secure.yaml" />
+    <global-property doc:name="Global Property" doc:id="a3f01ed3-d673-4b2a-b524-f30f3b3a3794" name="key" value="1234567890123456" />
+    <configuration-properties doc:name="Configuration properties" doc:id="f7328107-db65-49e1-8a63-5afc15bdf910" file="properties/global-config.yaml" />
+</mule>

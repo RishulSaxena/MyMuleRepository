@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="ckycFlow" doc:id="bfb62974-4b9b-4cf2-a59d-905391c315bc" >
+		<http:listener doc:name="Listener" doc:id="cc954a8b-cec9-4e32-967c-0e2d99f4bc51" config-ref="httpListenerConfig" path="/ckyc"/>
+	<ee:transform doc:name="Transform Message" doc:id="7395e6df-ede6-407a-9ab4-c09980744794">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="temp" ><![CDATA[%dw 2.0
+output application/json
+---
+payload.parts..content[0]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="ed0fd45d-f332-4293-921c-9880d1e94c25" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Binaries
+output application/json
+---
+{
+	"id_type": attributes.queryParams.id_type,
+	"id_num": attributes.queryParams.id_num,
+	"full_name": attributes.queryParams.full_name,
+	"gender": attributes.queryParams.gender,
+	"pan": attributes.queryParams.pan,
+	"dob" : attributes.queryParams.dob,
+	"req_id": 'req-1'
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="CKYC" doc:id="2ff2e82b-87d2-40bf-b4c7-785a387d902c" config-ref="HTTP_Request_configuration" path="${arya.ckyc}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/json",
+	"token" : p('secure::arya.ckyc-token')
+}]]]></http:headers>
+		</http:request>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="dc620e88-da93-421a-8d6e-528fc5fedbc3" message="End of CKYC FLow"/>
+	
+	</flow>
+</mule>

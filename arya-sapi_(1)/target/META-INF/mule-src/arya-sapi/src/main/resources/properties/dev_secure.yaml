@@ -1,0 +1,22 @@
+keystore:
+  password: "![DJqeCF2q+gwuHPxNw6+apA==]"
+  
+arya:
+  rc-token: "![]"
+  kyc-token: "![]"
+  invoice-token: "![]"
+  liveness-token: "![]"
+  cheque-token: "![]"
+  salaryslip-token: "![]"
+  translation-token: "![]"
+  form16-token: "![]"
+  pan-gst-token: "![]"
+  ckyc-token: "![]"
+  bankmandate-token: "![]"
+  qr-code-token: "![]"
+  labour-licence-token: "![]"
+  image-quality-token: "![]"
+  itr-extraction-token: "![]"
+  motor-token: "![]"
+  signature-detection-token: "![]"
+  

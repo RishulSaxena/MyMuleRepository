@@ -1,0 +1,13 @@
+api:
+  id-discovery: "18433209"
+  
+https-listner:
+  host: 'localhost'
+  port: '8081'
+  timeout: "30000" 
+  
+keystore:
+  path: "keystore.jks"
+  
+arya:
+  host: "ping.arya.ai"

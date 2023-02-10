@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd"><sub-flow name="itr-extraction" doc:id="c2ddc450-ac30-4bff-8ea0-9b35c30a622a" >
+		<ee:transform doc:name="Transform Message" doc:id="a0f28663-25b8-495c-8a69-c941fbafed35">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="temp" ><![CDATA[%dw 2.0
+output application/json
+---
+payload.parts..content[0]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="7b901976-6f9d-4831-9e3b-0f77cf958015" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Binaries
+output application/json
+---
+{
+	"doc_type":attributes.queryParams.doc_type,
+	"doc_base64" : (toBase64(vars.temp) as String),
+	"req_id": 'req-1'
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="ITR Extraction" doc:id="fbc126b5-a921-4584-88df-52b7e369b5f0" config-ref="HTTP_Request_configuration" path="${arya.itr-extraction}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/json",
+	"token" : p('secure::arya.itr-extraction-token')
+}]]]></http:headers>
+		</http:request>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="a37e7032-2310-45e5-be7d-bd293144f493" message="End of ITR Extraction FLow"/>
+	
+	</sub-flow></mule>

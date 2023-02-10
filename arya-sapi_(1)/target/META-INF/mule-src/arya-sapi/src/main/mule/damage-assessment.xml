@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="motor" doc:id="3d3b349e-b7c7-4491-808c-bf7b673598bb" >
+		<ee:transform doc:name="Transform Message" doc:id="2181c8a6-a860-4276-915f-8c82604189a3">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="temp" ><![CDATA[%dw 2.0
+output application/json
+---
+payload.parts..content[0]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="21fdf2b9-abd9-46aa-a145-18208cc36d63" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Binaries
+output application/json
+---
+{
+	"doc_type":attributes.queryParams.doc_type,
+	"manufacturer": attributes.queryParams.manufacturer,
+	"model": attributes.queryParams.model,
+	"doc_base64" : (toBase64(vars.temp) as String),
+	"req_id": 'req-1'
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Damage Assessment" doc:id="19a669c1-a364-4a5a-a7fb-6e0507cc224b" config-ref="HTTP_Request_configuration" path="${arya.motor}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/json",
+	"token" : p('secure::arya.motor-token')//"ca23a99aa7633e97f62fb7b71dd7ac4e"
+}]]]></http:headers>
+		</http:request>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="84997211-edc9-4ca7-ad7a-2a05760e1ab9" message="End of Damage Assessment FLow"/>
+	
+	</sub-flow>
+</mule>

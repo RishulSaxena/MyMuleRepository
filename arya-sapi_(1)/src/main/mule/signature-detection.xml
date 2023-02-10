@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="signature-detection" doc:id="578d6941-799f-4c5a-81b4-3860962310ed" >
+		<ee:transform doc:name="Transform Message" doc:id="fc9b6635-1f78-4322-80ee-2f7604d39430">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="temp" ><![CDATA[%dw 2.0
+output application/json
+---
+payload.parts..content[0]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="58112fd7-94a1-4f30-9ba1-7c044d1e02bf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Binaries
+output application/json
+---
+{
+	"output_format": 'snippets',
+	"doc_base64" : (toBase64(vars.temp) as String),
+	"req_id": 'req-1'
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Signature Detection" doc:id="6e64f4f2-3d96-4fa5-8669-bdd1d738f777" config-ref="HTTP_Request_configuration" path="${arya.signature-detection}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/json",
+	"token" : p('secure::arya.signature-detection-token')//"9020abc8a7623a9cf17eb2b01dd1a04b"
+}]]]></http:headers>
+		</http:request>
+		<ee:transform>
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="cf510b6f-4930-487f-8ef3-29fc39a1ea7f" message="End of Damage Assessment FLow"/>
+	
+	</sub-flow>
+</mule>

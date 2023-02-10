@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+<flow name="form16-flow" doc:id="b7d4e5bc-3f2e-435a-a467-49e63523b4ab" >
+		<logger level="INFO" doc:name="Start Logger" doc:id="dfb53929-4f15-44b2-b640-6fa71ebd4508" message="Start of form16 flow"/>
+		<ee:transform doc:name="Form16 Request Properties" doc:id="f3ad08d8-44f8-4c5c-80e5-8eb35222ad1a" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable resource="dwl/form16Body.dwl" variableName="body" />
+				<ee:set-variable resource="dwl/form16Headers.dwl" variableName="headers" />
+			</ee:variables>
+		</ee:transform>
+		<http:request method="POST" doc:name="Form16 Request" doc:id="cf029a77-d2c8-4808-81f3-606f3489d786" path="${arya.form16-path}" config-ref="HTTP_Request_configuration">
+			<http:body ><![CDATA[#[vars.body]]]></http:body>
+			<http:headers ><![CDATA[#[vars.headers]]]></http:headers>
+		</http:request>
+		<logger level="INFO" doc:name="End Logger" doc:id="7d72d7c1-003f-4599-8ec4-68a8ea4ee74c" message="End of form16 flow"/>
+	</flow>
+</mule>

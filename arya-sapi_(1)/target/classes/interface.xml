@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    
+	<flow name="arya-sapi-main">
+        <http:listener config-ref="httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="arya-sapi-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\ping:arya-sapi-config">
+        <ee:transform doc:name="Ping Response">
+            <ee:message>
+                <ee:set-payload resource="dwl/pingResponse.dwl" />
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="post:\rc:multipart\form-data:arya-sapi-config">
+        <flow-ref doc:name="rc-flow" doc:id="d7b6c8b6-6519-4156-8d50-af160af616b1" name="rc-flow" />
+    </flow>
+    <flow name="get:\pan-gst:arya-sapi-config">
+		<flow-ref doc:name="pan-gst" doc:id="6c53a836-fbc4-4d88-abad-581406ac574c" name="pan-gst" />
+    </flow>
+    <flow name="post:\bankmandate:multipart\form-data:arya-sapi-config">
+		<flow-ref doc:name="bankmandate" doc:id="51d39fd9-dbab-4fac-bb5f-e1910b40d429" name="bankmandate" />
+    </flow>
+    <flow name="post:\cheque:multipart\form-data:arya-sapi-config">
+		<flow-ref doc:name="cheque-flow" doc:id="02ca982d-f695-435b-b739-d41163d7aac9" name="cheque-flow"/>
+    </flow>
+    <flow name="post:\form16:multipart\form-data:arya-sapi-config">
+		<flow-ref doc:name="form16-flow" doc:id="414e75ec-c017-4beb-ab15-6c8fa3ddb32a" name="form16-flow"/>
+    </flow>
+    <flow name="post:\image-quality:multipart\form-data:arya-sapi-config">
+		<flow-ref doc:name="image-quality" doc:id="757ee52d-6094-4146-a953-c7e9b194efa6" name="image-quality" />
+    </flow>
+    <flow name="post:\invoice:multipart\form-data:arya-sapi-config">
+		<flow-ref doc:name="invoice-flow" doc:id="44cee08c-2e82-434d-84e9-8fba6fd79a4b" name="invoice-flow"/>
+    </flow>
+    <flow name="post:\itr-extract:multipart\form-data:arya-sapi-config">
+		<flow-ref doc:name="itr-extraction" doc:id="cc59387f-c64a-491d-8220-3fe1ac2f4f63" name="itr-extraction" />
+    </flow>
+    <flow name="post:\kyc:multipart\form-data:arya-sapi-config">
+        <flow-ref doc:name="kyc-flow" doc:id="ddb1f9b6-6618-432b-9653-4d4921ebb246" name="kyc-flow"/>
+    </flow>
+    <flow name="post:\labour-licence:multipart\form-data:arya-sapi-config">
+		<flow-ref doc:name="labour-licence" doc:id="86a1e46b-d187-463a-9fe8-2933cf6a85d0" name="labour-licence" />
+    </flow>
+    <flow name="post:\liveness:multipart\form-data:arya-sapi-config">
+		<flow-ref doc:name="liveness-flow" doc:id="79bf9687-3560-4072-827f-8331046e0939" name="liveness-flow"/>
+    </flow>
+    <flow name="post:\motor:multipart\form-data:arya-sapi-config">
+		<flow-ref doc:name="damage-assessment" doc:id="c5bce9a8-7669-43e5-a9b3-308f57f0b038" name="motor" />
+    </flow>
+    <flow name="post:\qr:multipart\form-data:arya-sapi-config">
+		<flow-ref doc:name="qr-code-reader" doc:id="a126808d-0c7d-4b12-8792-8c7ea0589aa8" name="qr-code-reader" />
+    </flow>
+    <flow name="post:\salaryslip:multipart\form-data:arya-sapi-config">
+		<flow-ref doc:name="salaryslip-flow" doc:id="5d093c54-b5e0-4788-b74a-651753233519" name="salaryslip-flow"/>
+    </flow>
+    <flow name="post:\signature-detection:multipart\form-data:arya-sapi-config">
+		<flow-ref doc:name="signature-detection" doc:id="3dd7cddf-f30e-4447-b45f-c725fbb2bdc3" name="signature-detection" />
+    </flow>
+    <flow name="post:\translation:multipart\form-data:arya-sapi-config">
+		<flow-ref doc:name="translation-flow" doc:id="d6188ad1-8e97-4999-85b2-5e5c9218b852" name="translation-flow"/>
+    </flow>
+</mule>
