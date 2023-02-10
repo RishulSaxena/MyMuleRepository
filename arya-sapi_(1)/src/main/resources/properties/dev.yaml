@@ -11,3 +11,5 @@ keystore:
   
 arya:
   host: "ping.arya.ai"
+arya2:
+  port: 8082
